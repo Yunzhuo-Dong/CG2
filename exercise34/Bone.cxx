@@ -41,7 +41,7 @@ void Bone::calculate_matrices()
 
 
 	////
-	// Task 4.6: Implement matrix calculation (skinning)
+	// Task 4.5: Implement matrix calculation (skinning)
 
 }
 

@@ -34,8 +34,9 @@ SkeletonViewer::SkeletonViewer(DataStore* data)
 }
 
 //draws a part of a skeleton, represented by the given root node
-void SkeletonViewer::draw_skeleton_subtree(Bone* node, const Mat4& parent_local_to_global, context& ctx, int level)
-{
+void SkeletonViewer::draw_skeleton_subtree(
+	Bone* node, const Mat4& parent_system_transf_local_to_global, context& ctx, int level
+){
 	////
 	// Task 3.2, 4.3: Visualize the skeleton
 }

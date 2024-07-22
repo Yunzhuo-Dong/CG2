@@ -136,21 +136,21 @@ private:
     // ------------------------------
     // For skinning
 
-    // System transformation that translates bone-local coordinates into the global system, i.e. yields the globally translated coordinates from bone-local coordinates; Task 4.6
+    // System transformation that translates bone-local coordinates into the global system, i.e. yields the globally translated coordinates from bone-local coordinates; Task 4.5
     Mat4 translationSystemTransformLocalToGlobal;
-    // Model transformation that translates to the current bone from the global system (in global coordinates); Task 4.6
+    // Model transformation that translates to the current bone from the global system (in global coordinates); Task 4.5
     // Automatically tracks the corresponding system transformation.
     Mat4 &translationModelTransformGlobalToLocal = translationSystemTransformLocalToGlobal;
 
-    // System transformation that transforms (orientation and translation) bone-local coordinates into the global system, i.e. yields the globally transformed coordinates from bone-local coordinates; Task 4.6
+    // System transformation that transforms (orientation and translation) bone-local coordinates into the global system, i.e. yields the globally transformed coordinates from bone-local coordinates; Task 4.5
     Mat4 systemTransformLocalToGlobal;
-    // Model transformation that transforms (orientation and translation) onto the current bone from the global system (in global coordinates); Task 4.6
+    // Model transformation that transforms (orientation and translation) onto the current bone from the global system (in global coordinates); Task 4.5
     // Automatically tracks the corresponding system transformation.
     Mat4 &modelTransformGlobalToLocal = systemTransformLocalToGlobal;
 
-    // System transformation that transforms (orientation and translation) global coordinates into the bone-local system, i.e. yields local coordinates from global coordinates; Task 4.6
+    // System transformation that transforms (orientation and translation) global coordinates into the bone-local system, i.e. yields local coordinates from global coordinates; Task 4.5
     Mat4 systemTransformGlobalToLocal;
-    // Model transformation that transforms (orientation and translation) onto the global system from the current bone (in coordinates relative to the current bone); Task 4.6
+    // Model transformation that transforms (orientation and translation) onto the global system from the current bone (in coordinates relative to the current bone); Task 4.5
     // Automatically tracks the corresponding system transformation.
     Mat4 &modelTransformLocalToGlobal = systemTransformGlobalToLocal;
 
