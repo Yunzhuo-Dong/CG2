@@ -62,10 +62,14 @@ private:
 
 public:
 	// The constructor of this class
-	SkeletonViewer(DataStore*);	
+	SkeletonViewer(DataStore*);
+
+	// Perform initialization that needs a graphics context
+	bool init (context &ctx);
 
 	// Create the gui elements
 	void create_gui();
+
 	// Draw the scene
 	void draw(context& c);
 

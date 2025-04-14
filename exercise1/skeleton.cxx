@@ -117,8 +117,8 @@ void skeleton<T>::draw(context& ctx)
 			if (((size_t)edges[i].first) >= (knot_vector<T>::points).size() ||
 			    ((size_t)edges[i].second) >= (knot_vector<T>::points).size())
 				continue;
-			glVertex3dv((knot_vector<T>::points)[edges[i].first]);
-			glVertex3dv((knot_vector<T>::points)[edges[i].second]);
+			glVertex3dv((knot_vector<T>::points)[edges[i].first].data());
+			glVertex3dv((knot_vector<T>::points)[edges[i].second].data());
 		}
 	glEnd();
 	glEnable(GL_LIGHTING);

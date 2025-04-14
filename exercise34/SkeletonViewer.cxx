@@ -22,7 +22,7 @@ cgv::render::shader_program Mesh::prog;
 SkeletonViewer::SkeletonViewer(DataStore* data)
 	: node("Skeleton Viewer"), data(data)
 	/* Bonus task: initialize members relevant for animation */
-{	
+{
 	connect(data->skeleton_changed, this, &SkeletonViewer::skeleton_changed);
 
 	connect(get_animation_trigger().shoot, this, &SkeletonViewer::timer_event);
@@ -38,7 +38,7 @@ void SkeletonViewer::draw_skeleton_subtree(
 	Bone* node, const Mat4& parent_system_transf_local_to_global, context& ctx, int level
 ){
 	////
-	// Task 3.2, 4.3: Visualize the skeleton
+	// Task 3.2, 3.3, 4.3: Visualize the skeleton
 }
 
 void SkeletonViewer::timer_event(double, double dt)
@@ -74,16 +74,15 @@ void SkeletonViewer::skeleton_changed(std::shared_ptr<Skeleton> s)
 		// If there is no view, we cannot update it
 		cgv::gui::message("could not find a view to adjust!!");
 	}
-	else
-	{
+	else {
 		Vec3 center = (s->getMin() + s->getMax()) * 0.5;
 		view_ptrs[0]->set_focus(center.x(), center.y(), center.z());
 		// Set the scene's size at the focus point
 		view_ptrs[0]->set_y_extent_at_focus(s->getMax().y() - s->getMin().y());
-	}	
+	}
 
-	//connect signals	
-	recursive_connect_signals(s->get_root());	
+	//connect signals
+	recursive_connect_signals(s->get_root());
 
 	post_redraw();
 }
@@ -223,6 +222,20 @@ void SkeletonViewer::load_animation()
 	{
 		/*Bonus task: load animation from selected file */
 	}
+}
+
+// Perform initialization
+bool SkeletonViewer::init(context &ctx)
+{
+	// Cause context re-creation in compatibility profile in case we're in core, to enable more ergonomic drawing code
+	// (legacy OpenGL immediate mode) for drawing the indicators in task 3.3
+	// - obtain reflection-enabled interface to the context
+	auto &ctx_as_base = dynamic_cast<base&>(ctx);
+	// - activate compatibility profile (may cause context re-creation and thus recursion into this ::init()
+	ctx_as_base.set("core_profile", false);
+
+	// Done!
+	return true;
 }
 
 // Create the gui elements
