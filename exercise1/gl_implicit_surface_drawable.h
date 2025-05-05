@@ -30,6 +30,7 @@ protected:
 public:
 	/// standard constructor does not initialize the function pointer so that nothing is drawn
 	gl_implicit_surface_drawable();
+	bool init (cgv::render::context &ctx);
 	void on_set(void* member_ptr);
 	bool self_reflect(cgv::reflect::reflection_handler& rh);
 	std::string get_type_name() const;

@@ -289,9 +289,23 @@ bool in_member (void *ptr, const T& member) {
 	return ((char*)ptr)-((char*)&member) < sizeof(T);
 }
 
+bool gl_implicit_surface_drawable::init(cgv::render::context &ctx)
+{
+	// Cause context re-creation in compatibility profile in case we're in core, to enable the old legacy drawing code
+	// (OpenGL immediate mode) we use in several places.
+	// - obtain reflection-enabled interface to the context
+	auto &ctx_as_base = dynamic_cast<base&>(ctx);
+	// - activate compatibility profile (may cause context re-creation and thus recursion into this ::init()
+	ctx_as_base.set("core_profile", false);
+
+	// Delegate back to super class for remaining initialization
+	return gl_implicit_surface_drawable_base::init(ctx);
+}
+
 void gl_implicit_surface_drawable::on_set(void* p)
 {
-	if (p == &box_scale) {
+	if (p == &box_scale)
+	{
 		if (find_control(box.ref_min_pnt()[0])) {
 			for (int i = 0; i < 3; ++i) {
 				find_control(box.ref_min_pnt()[i])->set("min", -box_scale);
