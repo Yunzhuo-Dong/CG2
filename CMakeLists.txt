@@ -3,11 +3,14 @@ set(COURSE_NAME "CG2")
 project(${COURSE_NAME} C CXX)
 
 # pre-set CGV Framework options
-option(CGV_BUILD_EXAMPLES off)
-option(CGV_BUILD_WITH_AUDIO off)
+option(CGV_BUILD_EXAMPLES "" off)
+option(CGV_BUILD_WITH_AUDIO "" off)
 
 # Include the CGV Framework
-if (DEFINED ENV{CGV_DIR})
+if (
+	DEFINED ENV{CGV_DIR} AND EXISTS "$ENV{CGV_DIR}/cgv-config.cmake"
+	AND EXISTS "$ENV{CGV_DIR}/cgv-options.cmake" AND EXISTS "$ENV{CGV_DIR}/CMakeLists.txt"
+)
 	# Use system-installed CGV Framework if present
 	set(CGV_DIR $ENV{CGV_DIR})
 	message("Using CGV Framework source found at:")
@@ -15,6 +18,7 @@ if (DEFINED ENV{CGV_DIR})
 	add_subdirectory(${CGV_DIR} ./cgv)
 else()
 	# Use CGV Framework bundled in form of the Git submodule
+	message("Using internally packaged CGV Framework source.")
 	add_subdirectory(${CMAKE_SOURCE_DIR}/cgv)
 endif()
 
