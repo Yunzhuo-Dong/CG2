@@ -16,14 +16,14 @@ using namespace cgv::media::font;
 
 static text_style* get_text_style_table() {
 	static text_style style_table[NR_TEXT_STYLES] = {
-		{ 0x000000, find_font("Courier")->get_font_face(FFA_REGULAR), 12 }, 
-		{ 0x00009f, find_font("Courier")->get_font_face(FFA_BOLD), 12 }, 
-		{ 0xaf0000, find_font("Courier")->get_font_face(FFA_BOLD), 12 }, 
-		{ 0x7f007f, find_font("Courier")->get_font_face(FFA_BOLD), 12 }, 
-		{ 0x108020, find_font("Courier")->get_font_face(FFA_REGULAR), 12 },
-		{ 0xaf0000, find_font("Courier")->get_font_face(FFA_BOLD), 12 },
-		{ 0x777777, find_font("Courier")->get_font_face(FFA_REGULAR), 12 },
-		{ 0x007777, find_font("Courier")->get_font_face(FFA_REGULAR), 12 }
+		{ 0x000000, find_font_or_default("Courier", true)->get_font_face(FFA_REGULAR), 12 },
+		{ 0x00009f, find_font_or_default("Courier", true)->get_font_face(FFA_BOLD), 12 },
+		{ 0xaf0000, find_font_or_default("Courier", true)->get_font_face(FFA_BOLD), 12 },
+		{ 0x7f007f, find_font_or_default("Courier", true)->get_font_face(FFA_BOLD), 12 },
+		{ 0x108020, find_font_or_default("Courier", true)->get_font_face(FFA_REGULAR), 12 },
+		{ 0xaf0000, find_font_or_default("Courier", true)->get_font_face(FFA_BOLD), 12 },
+		{ 0x777777, find_font_or_default("Courier", true)->get_font_face(FFA_REGULAR), 12 },
+		{ 0x007777, find_font_or_default("Courier", true)->get_font_face(FFA_REGULAR), 12 }
 	};
 	return style_table;
 }
