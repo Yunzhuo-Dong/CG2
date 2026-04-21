@@ -24,16 +24,16 @@ gl_implicit_surface_drawable::gl_implicit_surface_drawable()
 #endif
 	box_scale = 1.2f;
 
-	material.set_brdf_type((illum::BrdfType)(illum::BT_LAMBERTIAN | illum::BT_PHONG));
-	material.ref_diffuse_reflectance() = {.0625f, .25f, .45f};
-	material.ref_specular_reflectance() = {.0625f, .0625f, .0625f};
-	material.ref_emission() = {.03125f, 1/5.f, 1/3.f};
-	material.ref_roughness() = .0625f;
-	brs.material.set_brdf_type((illum::BrdfType)(illum::BT_LAMBERTIAN | illum::BT_PHONG));
-	brs.material.ref_diffuse_reflectance() = {.45f, .45f, .45f};
-	brs.material.ref_specular_reflectance() = {.0625f, .0625f, .0625f};
-	brs.material.ref_emission() = {.03125f, .03125f, .03125f};
-	brs.material.ref_roughness() = .03125f;
+	material.brdf_type = (illum::BrdfType)(illum::BT_LAMBERTIAN | illum::BT_PHONG);
+	material.diffuse_reflectance = {.0625f, .25f, .45f};
+	material.specular_reflectance = {.0625f, .0625f, .0625f};
+	material.emission = {.03125f, 1/5.f, 1/3.f};
+	material.roughness = .0625f;
+	brs.material.brdf_type = (illum::BrdfType)(illum::BT_LAMBERTIAN | illum::BT_PHONG);
+	brs.material.diffuse_reflectance = {.45f, .45f, .45f};
+	brs.material.specular_reflectance = {.0625f, .0625f, .0625f};
+	brs.material.emission = {.03125f, .03125f, .03125f};
+	brs.material.roughness = .03125f;
 }
 
 std::string gl_implicit_surface_drawable::get_type_name() const
@@ -281,7 +281,7 @@ bool gl_implicit_surface_drawable::self_reflect(cgv::reflect::reflection_handler
 		rh.reflect_member("show_mesh_normals", show_mesh_normals) &&
 		rh.reflect_member("epsilon", epsilon) &&
 		rh.reflect_member("grid_epsilon", grid_epsilon) &&
-		rh.reflect_member("material_roughness", material.ref_roughness());
+		rh.reflect_member("material_roughness", material.roughness);
 }
 
 template <class T>

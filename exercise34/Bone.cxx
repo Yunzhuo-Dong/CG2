@@ -32,7 +32,7 @@ void Bone::calculate_matrices()
 	std::for_each(orientation.begin(), orientation.end(), [&](AtomicTransform* t) {
         orientationSystemTransformLocalToGlobal = orientationSystemTransformLocalToGlobal * t->calculate_matrix();
 	});
-    orientationModelTransformLocalToGlobal = cgv::math::inv(orientationSystemTransformLocalToGlobal);
+    orientationModelTransformLocalToGlobal = cgv::math::inverse(orientationSystemTransformLocalToGlobal);
     // ^ same thing:  orientationSystemTransformGlobalToLocal = cgv::math::inv(orientationModelTransformGlobalToLocal);
 
 	////

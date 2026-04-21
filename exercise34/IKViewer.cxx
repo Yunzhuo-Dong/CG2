@@ -95,17 +95,17 @@ void IKViewer::calculate_kinematic_chain(Bone* base, Bone* endeffector)
 	{
 		if (b == common_ancestor)
 			break;
-		t = cgv::math::inv(b->get_translation_transform_current_joint_to_next());
+		t = cgv::math::inverse(b->get_translation_transform_current_joint_to_next());
 		chain_base_to_ancestor.push_back(std::make_shared<StaticTransform>(t));
 		matrix_base_to_ancestor = matrix_base_to_ancestor * t;
 		for (int current_dof_id = b->dof_count() - 1; current_dof_id >= 0; --current_dof_id)
 		{
 			auto dof = b->get_dof(current_dof_id);
-			t = cgv::math::inv(dof->calculate_matrix());
+			t = cgv::math::inverse(dof->calculate_matrix());
 			chain_base_to_ancestor.push_back(std::make_shared<InverseTransform>(dof));
 			matrix_base_to_ancestor = matrix_base_to_ancestor * t;
 		}
-		t = cgv::math::inv(b->get_orientation_transform_prev_joint_to_current());
+		t = cgv::math::inverse(b->get_orientation_transform_prev_joint_to_current());
 		chain_base_to_ancestor.push_back(std::make_shared<StaticTransform>(t));
 		matrix_base_to_ancestor = matrix_base_to_ancestor * t;
 		b = b->get_parent();
@@ -145,13 +145,13 @@ void IKViewer::optimize()
 		Mat4 after_dof;
 		after_dof.identity();
 		Mat4 before_dof = current_endeffector_matrix;
-		Vec4 target_base_local = cgv::math::inv(current_base_matrix) * target_position;
+		Vec4 target_base_local = cgv::math::inverse(current_base_matrix) * target_position;
 		//start from the last bone
 		for (auto it = kinematic_chain.rbegin(); it != kinematic_chain.rend(); ++it)
 		{
 			auto t = *it;
-			before_dof = before_dof * inv(t->calculate_matrix());
-			Vec4 target_dof_local = inv(before_dof) * target_base_local;
+			before_dof = before_dof * cgv::math::inverse(t->calculate_matrix());
+			Vec4 target_dof_local = cgv::math::inverse(before_dof) * target_base_local;
 			t->optimize_value(Vec3(after_dof(0, 3), after_dof(1, 3), after_dof(2, 3)), Vec3(3, &target_dof_local(0)));
 			after_dof = t->calculate_matrix() * after_dof;
 		}
@@ -178,7 +178,7 @@ void IKViewer::optimize()
 		b = b->get_parent();
 	}
 	Mat4 origin_to_base = current_ancestor_matrix * transform_ancestor_to_base;
-	Mat4 global_to_origin = current_base_matrix * cgv::math::inv(origin_to_base);
+	Mat4 global_to_origin = current_base_matrix * cgv::math::inverse(origin_to_base);
 	data->get_skeleton()->set_origin(global_to_origin);
 
 	//used for correct GUI behavior

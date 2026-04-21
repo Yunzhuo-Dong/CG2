@@ -144,7 +144,7 @@ class InverseTransform : public Transform
 public:
 	InverseTransform(std::shared_ptr<AtomicTransform> t) : t(t) { }
 
-	Mat4 calculate_matrix() { return cgv::math::inv(t->calculate_matrix()); }
+	Mat4 calculate_matrix() { return cgv::math::inverse(t->calculate_matrix()); }
 	void optimize_value(const Vec3& local_vector, const Vec3& target)
 	{
 		t->optimize_value(local_vector, target, true);

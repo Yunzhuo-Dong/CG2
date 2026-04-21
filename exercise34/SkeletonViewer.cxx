@@ -28,9 +28,9 @@ SkeletonViewer::SkeletonViewer(DataStore* data)
 	connect(get_animation_trigger().shoot, this, &SkeletonViewer::timer_event);
 
 	// Prepare surface material
-	material.set_brdf_type((cgv::media::illum::BrdfType)(cgv::media::illum::BT_LAMBERTIAN | cgv::media::illum::BT_PHONG));
-	material.ref_specular_reflectance() = { .03125f, .03125f, .03125f };
-	material.ref_roughness() = .03125f;
+	material.brdf_type = (cgv::media::illum::BrdfType)(cgv::media::illum::BT_LAMBERTIAN | cgv::media::illum::BT_PHONG);
+	material.specular_reflectance = { .03125f, .03125f, .03125f };
+	material.roughness = .03125f;
 }
 
 //draws a part of a skeleton, represented by the given root node

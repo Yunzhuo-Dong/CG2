@@ -44,27 +44,27 @@ struct transformation : public implicit_group<T>
 
 			ctx.push_modelview_matrix();
 				// z-axis
-				material.set_diffuse_reflectance(
+				material.diffuse_reflectance =
 					cgv::media::illum::surface_material::color_type(0, 0, 1)
-				);
+				;
 				ctx.set_material(material);
 				ctx.tesselate_arrow(1.2, 0.025);
 				// x-axis
 				ctx.mul_modelview_matrix(
 					cgv::math::rotate4<double>(90, 0, 1, 0)
 				);
-				material.set_diffuse_reflectance(
+				material.diffuse_reflectance =
 					cgv::media::illum::surface_material::color_type(1, 0, 0)
-				);
+				;
 				ctx.set_material(material);
 				ctx.tesselate_arrow(1.2, 0.025);
 				// y-axis
 				ctx.mul_modelview_matrix(
 					cgv::math::rotate4<double>(-90, 1, 0, 0)
 				);
-				material.set_diffuse_reflectance(
+				material.diffuse_reflectance =
 					cgv::media::illum::surface_material::color_type(0, 1, 0)
-				);
+				;
 				ctx.set_material(material);
 				ctx.tesselate_arrow(1.2, 0.025);
 			ctx.pop_modelview_matrix();
