@@ -67,15 +67,26 @@ protected:
 
 	// Whether to draw the backside of the quad
 	bool draw_backside;
+	
+
 
 	//*********************************************************************************/
 	// Task 0.1: Add some data member to indicate whether to use custom tesselation of
-	//           the quad or the one built into the cgv::render::context. Make sure to
+	//           the quad or the one built into the c. Make sure to
 	//           initialize this to "do not use custom quad" when constructing the
 	//           object.
+	
 
 	// < your code here >
 
+	//I need to define the programm go through custom tesselation or go the inside cgv::render::context
+	// 
+	// so it is  a bool structure
+	// 
+	bool user_tesselation = false;
+	
+
+	// 
 	// [END] Task 0.1
 	//*********************************************************************************/
 
@@ -150,7 +161,10 @@ public:
 			rh.reflect_member("fb_bgcolor_g", fb_bgcolor_g) &&
 			rh.reflect_member("fb_bgcolor_b", fb_bgcolor_b) &&
 			rh.reflect_member("wireframe", wireframe) &&
+			rh.reflect_member("user_tesselation", user_tesselation)&&
 			rh.reflect_member("draw_backside", draw_backside);
+		
+
 	}
 
 	// Part of the cgv::base::base interface, should be implemented to respond to write
@@ -342,6 +356,9 @@ public:
 
 		// < Your code here >
 
+		//swtich into tesselation 
+		add_member_control(this, "custom tesselation", user_tesselation);
+
 		// [END] Task 0.1
 		//*****************************************************************************/
 	}
@@ -492,7 +509,13 @@ public:
 		// Task 0.1: If enabled, render the quad with custom tesselation
 		//           instead of using tesselate_unit_square(). You can invoke
 		//           the method draw_my_unit_square() for this.
+		if (user_tesselation) {
+			draw_my_unit_square(ctx);
+		}
+		else {
 			ctx.tesselate_unit_square();
+		}
+		
 
 		//*********************************************************************/
 
@@ -504,9 +527,15 @@ public:
 		// Task 0.1: If enabled, render the quad with custom tesselation
 		//           instead of using tesselate_unit_square(). Again, you
 		//           can invoke the method draw_my_unit_square() for this.
-			if (draw_backside)
+		if (draw_backside) {
+			if (user_tesselation) {
+				draw_my_unit_square(ctx);
+			}
+			else {
 				ctx.tesselate_unit_square();
+			}
 
+		}
 		//*****************************************************************/
 		glPopAttrib();
 		ctx.pop_modelview_matrix();
