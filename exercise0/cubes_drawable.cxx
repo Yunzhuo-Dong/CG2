@@ -32,9 +32,63 @@ class cubes_fractal_render : //like the demo create a herientance structure whic
 	public cgv::render::drawable // Instances of this class can be rendered
 {
 protected:
+	//
+	unsigned int re_depth;//recursion depth
+
+	// Background color of the offscreen framebuffer. We use individual floats because
+	// the cgv::media::color datatype does not currently support reflection, and fvecs
+	// can not currently be set easily in a config file. We still want to use
+	// cgv::media::color because of its nice GUI representation, so we have to copy the
+	// values around.
+	float cube_color_r, cube_color_g, cube_color_b;
+
+
+	bool vertex_buffer;
+
+	bool inte_structure;
+
+
+	// Offscreen framebuffer
+	cgv::rgba cube_color; 
+	
+	// Geometry buffers
+
+	//one for  interleaved and one for non- interleaved 
+	
+	//for interleaved we like the demo
+	struct vertex {
+		cgv::vec3 pos;
+		cgv::vec2 tcoord;
+	};
+
+	//for non-interleaved we separate
+
+	std::vector<cgv::vec3> postions;
+	std::vector<cgv::vec2> texcoords;
+
+	std::vector<vertex> vertices;
+	cgv::render::vertex_buffer vb;
+	cgv::render::attribute_array_binding vertex_array;
+
+	cubes_fractal fractal_engine;
 
 
 public:
+	
+	cubes_fractal_render() {
+
+		//give parameter to depteh
+		re_depth = 1;
+
+		//give parameter to rgb
+		cube_color_r = 0.1f;
+
+		cube_color_g = 0.2f;
+
+		cube_color_r = 0.3f;
+
+	}
+	
 	std::string get_type_name(void) const {
 
 		return "cubes_fractal";
