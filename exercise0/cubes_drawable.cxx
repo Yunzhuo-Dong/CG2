@@ -72,7 +72,12 @@ protected:
 
 	cubes_fractal fractal_engine;
 
-
+	//
+	// Task 0.2b: Utilize the cubes_fractal class to render a fractal of hierarchically
+	//            transformed cubes. Expose its recursion depth and color properties to GUI
+	//            manipulation and reflection. Set reasonable values via the config
+	//            file.
+	//
 public:
 	
 	cubes_fractal_render() {
@@ -85,7 +90,15 @@ public:
 
 		cube_color_g = 0.2f;
 
-		cube_color_r = 0.3f;
+		cube_color_b = 0.3f;
+
+
+		//set these parameter to gui
+		cube_color = cgv::rgba(cube_color_r, cube_color_g, cube_color_b, 1.0f);
+
+		vertex_buffer = false;
+
+		inte_structure = false;
 
 	}
 	
@@ -95,14 +108,49 @@ public:
 	}
 	bool self_reflect(cgv::reflect::reflection_handler& rh) {
 	
-		return rh.reflect_member();
+		return
+
+			rh.reflect_member("recursion_depth", re_depth) &&
+
+			rh.reflect_member("color_red", cube_color_r) &&
+
+			rh.reflect_member("color_blue", cube_color_b) &&
+
+			rh.reflect_member("color_green", cube_color_g) &&
+
+			rh.reflect_member("vertex_buffer", vertex_buffer) &&
+
+			rh.reflect_member("interleaved_structure", inte_structure);
+
 	}
+	// Part of the cgv::base::base interface, should be implemented to respond to write
+	// access to reflected data members of this class, e.g. from config file processing
+	// or gui interaction.
+	void on_set(void* member_ptr)
+	{
+		//tell the fractal engine to update the depth and color
+		update_member(member_ptr);
+
+		//draw
+		post_redraw();
+	}
+
 	void create_gui(void) {
+
+		// Simple controls.Notifies us of GUI input via the on_set() method.
+			// - section header
+			add_decorator("Cubes fractal", "heading", "level=1");
+		// - the depth
+		add_member_control(this, "Recursion depth", re_depth, "value_slider","min=0;max=5;ticks=true");
+		// - the Color
+		add_member_control(this, "Cube color", cube_color);
 	
 	}
 
 	void draw(cgv::render::context& ctx) {
-	
+	//using gui_color and its depth, and using cubes_fractal.cxx to compute, we just need to send two parameter, depth and color
+
+		fractal_engine.draw_recursive(ctx, cube_color, re_depth, 0);
 	}
 };
 
@@ -110,12 +158,7 @@ cgv::base::object_registration<cubes_fractal_render> cubes_fractal_render_regist
 	"cubes_fractal_render"
 );
 
-//
-// Task 0.2b: Utilize the cubes_fractal class to render a fractal of hierarchically
-//            transformed cubes. Expose its recursion depth and color properties to GUI
-//            manipulation and reflection. Set reasonable values via the config
-//            file.
-//
+
 // Task 0.2c: Implement an option (configurable via GUI and config file) to use a vertex
 //            array object for rendering the cubes. The vertex array functionality 
 //            should support (again, configurable via GUI and config file) both
