@@ -77,13 +77,10 @@ protected:
 	//           object.
 	
 
-	// < your code here >
-
 	//I need to define the programm go through custom tesselation or go the inside cgv::render::context
-	// 
 	// so it is  a bool structure
 	// 
-	bool user_tesselation = false;
+	bool user_tesselation;
 	
 
 	// 
@@ -124,7 +121,8 @@ public:
 		  fb_resolution(512, 256), fb_invalid(true),
 		  texture("uint8[R,G,B,A]", cgv::render::TF_LINEAR, cgv::render::TF_LINEAR),
 		  fb_bgcolor_r(0.9f), fb_bgcolor_g(0.9f), fb_bgcolor_b(0.9f),
-		  bgcolor(fb_bgcolor_r, fb_bgcolor_g, fb_bgcolor_b), draw_backside(true), wireframe(false)
+		  bgcolor(fb_bgcolor_r, fb_bgcolor_g, fb_bgcolor_b), draw_backside(true), wireframe(false),
+      user_tesselation(false)
 	{
 		// Make sure the font server knows about the fonts packaged with the exercise
 		cgv::scan_fonts("./data/Fonts");
@@ -161,7 +159,7 @@ public:
 			rh.reflect_member("fb_bgcolor_g", fb_bgcolor_g) &&
 			rh.reflect_member("fb_bgcolor_b", fb_bgcolor_b) &&
 			rh.reflect_member("wireframe", wireframe) &&
-			rh.reflect_member("user_tesselation", user_tesselation)&&
+			rh.reflect_member("user_tesselation", user_tesselation) &&
 			rh.reflect_member("draw_backside", draw_backside);
 		
 
@@ -354,12 +352,8 @@ public:
 		// Task 0.1: add a GUI control to switch between custom tesselation of the quad
 		//           and the one built into the cgv::render::context.
 
-		// < Your code here >
-
-		//swtich into tesselation 
 		add_member_control(this, "custom tesselation", user_tesselation);
 
-		// [END] Task 0.1
 		//*****************************************************************************/
 	}
 

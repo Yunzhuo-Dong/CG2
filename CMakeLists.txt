@@ -6,6 +6,11 @@ project(${COURSE_NAME} C CXX)
 option(CGV_BUILD_EXAMPLES "" off)
 option(CGV_BUILD_WITH_AUDIO "" off)
 
+# On Linux, glew.h includes glu.h inside extern "C", which causes issues
+if (UNIX AND NOT APPLE)
+    add_compile_definitions(GLEW_NO_GLU)
+endif()
+
 # Include the CGV Framework
 if (
 	DEFINED ENV{CGV_DIR} AND EXISTS "$ENV{CGV_DIR}/cgv-config.cmake"
