@@ -97,15 +97,14 @@ public:
 	// or gui interaction.
 	void on_set(void* member_ptr)
 	{
-      if (member_ptr == &cube_color_r || member_ptr == &cube_color_g || member_ptr == &cube_color_b)
+      if (member_ptr == &cube_color_r || member_ptr == &cube_color_g || member_ptr == &cube_color_b) {
           cube_color = cgv::rgb(cube_color_r, cube_color_g, cube_color_b);
-      update_member(member_ptr);
-      post_redraw();
+    }
 
-		//tell the fractal engine to update the depth and color
+		// tell the fractal engine to update the depth and color
 		update_member(member_ptr);
 
-		//draw
+		// draw
 		post_redraw();
 	}
 

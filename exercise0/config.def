@@ -17,3 +17,7 @@ type(cgv_demo):user_tesselation=true
 
 
 /// Task 0.2: Set appropriate values for your drawable that renders the cube fractal.
+type(cubes_fractal):cube_color_r=0.9
+type(cubes_fractal):cube_color_g=0.1
+type(cubes_fractal):cube_color_b=0.1
+type(cubes_fractal):re_depth=2
