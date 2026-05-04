@@ -49,7 +49,7 @@ protected:
 
 
 	// Offscreen framebuffer
-	cgv::rgba cube_color; 
+	cgv::rgb cube_color;
 	
 	// Geometry buffers
 
@@ -94,7 +94,7 @@ public:
 
 
 		//set these parameter to gui
-		cube_color = cgv::rgba(cube_color_r, cube_color_g, cube_color_b, 1.0f);
+		cube_color = cgv::rgb(cube_color_r, cube_color_g, cube_color_b);
 
 		vertex_buffer = false;
 
@@ -139,10 +139,16 @@ public:
 
 
 	// Creates the custom geometry for the cubic
-	void init_unit_square_geometry(void)
+	void init_unit_cube_geometry(void)
 	{
 		// Prepare array
 		vertices.resize(36);
+		// create 8 
+		cgv::vec3 V[8] = {
+			{-1, -1,  1}, { 1, -1,  1}, { 1,  1,  1}, {-1,  1,  1}, 
+			{-1, -1, -1}, { 1, -1, -1}, { 1,  1, -1}, {-1,  1, -1}  
+		};
+
 
 	
 	}
