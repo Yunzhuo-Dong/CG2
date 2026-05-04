@@ -135,6 +135,18 @@ public:
 		post_redraw();
 	}
 
+
+
+
+	// Creates the custom geometry for the cubic
+	void init_unit_square_geometry(void)
+	{
+		// Prepare array
+		vertices.resize(36);
+
+	
+	}
+
 	void create_gui(void) {
 
 		// Simple controls.Notifies us of GUI input via the on_set() method.
@@ -149,8 +161,27 @@ public:
 
 	void draw(cgv::render::context& ctx) {
 	//using gui_color and its depth, and using cubes_fractal.cxx to compute, we just need to send two parameter, depth and color
+		
+		
+		cgv::render::shader_program& default_shader =
+			ctx.ref_default_shader_program(false /* false for we only need one color*/);
+
+		// Enable shader program we want to use for drawing
+		default_shader.enable(ctx);
+
+		// Set the "color" vertex attribute for all geometry drawn hereafter, except if
+			// it explicitely specifies its own color data by means of an attribute array.
+			// Note that this only works for shaders that define a vec4 attribute named
+			// "color" in their layout specification.
+			// We want white to retain the original color information in the texture.
+		ctx.set_color(cube_color);
+
+
 
 		fractal_engine.draw_recursive(ctx, cube_color, re_depth, 0);
+
+		// Disable shader program 
+		default_shader.disable(ctx);
 	}
 };
 
