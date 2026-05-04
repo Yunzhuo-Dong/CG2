@@ -563,6 +563,8 @@ public:
 	}
 };
 
+
+// Commented to visualize cubes recursion instead
 // Create an instance of the demo class at plugin load and register it with the framework
 //cgv::base::object_registration<cgv_demo> cgv_demo_registration(
 //	"cgv_demo" // <-- some arbitrary registration event tag that can be useful for advanced debugging

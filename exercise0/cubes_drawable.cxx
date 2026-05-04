@@ -33,20 +33,10 @@ class cubes_fractal_render : //like the demo create a herientance structure whic
 {
 protected:
 	//
-	unsigned int re_depth;//recursion depth
-
-	// Background color of the offscreen framebuffer. We use individual floats because
-	// the cgv::media::color datatype does not currently support reflection, and fvecs
-	// can not currently be set easily in a config file. We still want to use
-	// cgv::media::color because of its nice GUI representation, so we have to copy the
-	// values around.
+	unsigned int re_depth; //recursion depth
 	float cube_color_r, cube_color_g, cube_color_b;
 
-
 	bool vertex_buffer;
-
-	bool inte_structure;
-
 
 	// Offscreen framebuffer
 	cgv::rgb cube_color;
@@ -80,63 +70,44 @@ protected:
 	//
 public:
 	
-	cubes_fractal_render() {
-
-		//give parameter to depteh
-		re_depth = 1;
-
-		//give parameter to rgb
-		cube_color_r = 0.1f;
-
-		cube_color_g = 0.2f;
-
-		cube_color_b = 0.3f;
-
-
-		//set these parameter to gui
+	cubes_fractal_render()
+      :re_depth(1), cube_color_r(0.1f), cube_color_g(0.2f), cube_color_b(0.2f),
+      vertex_buffer(false)
+  {
 		cube_color = cgv::rgb(cube_color_r, cube_color_g, cube_color_b);
-
-		vertex_buffer = false;
-
-		inte_structure = false;
-
 	}
 	
 	std::string get_type_name(void) const {
 
 		return "cubes_fractal";
 	}
+
 	bool self_reflect(cgv::reflect::reflection_handler& rh) {
 	
 		return
-
-			rh.reflect_member("recursion_depth", re_depth) &&
-
-			rh.reflect_member("color_red", cube_color_r) &&
-
-			rh.reflect_member("color_blue", cube_color_b) &&
-
-			rh.reflect_member("color_green", cube_color_g) &&
-
-			rh.reflect_member("vertex_buffer", vertex_buffer) &&
-
-			rh.reflect_member("interleaved_structure", inte_structure);
-
+			rh.reflect_member("re_depth", re_depth) &&
+			rh.reflect_member("cube_color_r", cube_color_r) &&
+			rh.reflect_member("cube_folor_g", cube_color_b) &&
+			rh.reflect_member("cube_color_b", cube_color_g) &&
+			rh.reflect_member("vertex_buffer", vertex_buffer);
 	}
+
 	// Part of the cgv::base::base interface, should be implemented to respond to write
 	// access to reflected data members of this class, e.g. from config file processing
 	// or gui interaction.
 	void on_set(void* member_ptr)
 	{
+      if (member_ptr == &cube_color_r || member_ptr == &cube_color_g || member_ptr == &cube_color_b)
+          cube_color = cgv::rgb(cube_color_r, cube_color_g, cube_color_b);
+      update_member(member_ptr);
+      post_redraw();
+
 		//tell the fractal engine to update the depth and color
 		update_member(member_ptr);
 
 		//draw
 		post_redraw();
 	}
-
-
-
 
 	// Creates the custom geometry for the cubic
 	void init_unit_cube_geometry(void)
@@ -167,10 +138,9 @@ public:
 
 	void draw(cgv::render::context& ctx) {
 	//using gui_color and its depth, and using cubes_fractal.cxx to compute, we just need to send two parameter, depth and color
-		
-		
+				
 		cgv::render::shader_program& default_shader =
-			ctx.ref_default_shader_program(false /* false for we only need one color*/);
+        ctx.ref_surface_shader_program();
 
 		// Enable shader program we want to use for drawing
 		default_shader.enable(ctx);
@@ -180,9 +150,8 @@ public:
 			// Note that this only works for shaders that define a vec4 attribute named
 			// "color" in their layout specification.
 			// We want white to retain the original color information in the texture.
+
 		ctx.set_color(cube_color);
-
-
 
 		fractal_engine.draw_recursive(ctx, cube_color, re_depth, 0);
 
@@ -191,9 +160,6 @@ public:
 	}
 };
 
-cgv::base::object_registration<cubes_fractal_render> cubes_fractal_render_registration(
-	"cubes_fractal_render"
-);
 
 
 // Task 0.2c: Implement an option (configurable via GUI and config file) to use a vertex
@@ -210,4 +176,6 @@ cgv::base::object_registration<cubes_fractal_render> cubes_fractal_render_regist
 // ************************************************************************************/
 // Task 0.2a: register an instance of your drawable.
 
-// < your code here >
+cgv::base::object_registration<cubes_fractal_render> cubes_fractal_render_registration(
+	"cubes_fractal"
+);
