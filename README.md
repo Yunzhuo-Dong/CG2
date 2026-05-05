@@ -4,6 +4,15 @@ Repo: `https://github.com/Yunzhuo-Dong/CG2/`
 
 ## Setup
 
+### Linux
+
+To build and compile solution from scratch run
+
+```
+cmake -B cmake-build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel $(nproc)
+```
+
 ### MacOS
 
 To use CG2 under MacOS, build the application inside docker and set screen forwarding.
