@@ -142,12 +142,12 @@ public:
 		};
 		//normals for each face, which are shared between the two triangles that make up the face. 
 		cgv::vec3 N[6] = {
-			{ 0,  0,  1}, // Front face (index 0-5)
-			{ 1,  0,  0}, // Right face (index 6-11)
-			{ 0,  0, -1}, // Back face (index 12-17)
-			{-1,  0,  0}, // Left face (index 18-23)
-			{ 0,  1,  0}, // Top face (index 24-29)
-			{ 0, -1,  0}  // Bottom face (index 30-35)
+			{ 0,  0,  1}, 
+			{ 1,  0,  0}, 
+			{ 0,  0, -1},
+			{-1,  0,  0}, 
+			{ 0,  1,  0}, 
+			{ 0, -1,  0}  
 		};
 
 		//give restore space to each function
