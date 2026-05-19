@@ -26,6 +26,8 @@ protected:
 	cgv::media::illum::surface_material material;
 
 
+
+
 public:
 
 	/** The default constructor. */
