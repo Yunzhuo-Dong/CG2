@@ -226,7 +226,14 @@ public:
 		
 		const implicit_base<T>* target_child = implicit_group<T>::get_implicit_child(target_index);
 
-		return target_child->evaluate_gradient(p);
+		vec_type child_gradient = target_child->evaluate_gradient(p);
+
+		if (target_index>0 ) {
+			
+			return -child_gradient;
+		}
+			
+		return child_gradient;
 	}
 };
 
