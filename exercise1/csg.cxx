@@ -26,10 +26,32 @@ public:
 
 	T eval_and_get_index(const pnt_type& p, unsigned int& selected_i) const
 	{
-		T value;
 
 		// Task 1.1b: You can outsource logic here that evaluates the operator function
 		//            and reports the index of the relevant child in selected_i
+
+		//because we are looking fot the mininum value, so we create a infinity vaule
+
+		T value= std::numeric_limits<double>::infinity();
+
+		//then we need to loop through all the children of the union node and evaluate the implicit function at p for each child
+		unsigned int nr_children = implicit_group<T>::get_nr_children();
+		//now we traverse all the nodes of the children
+		for (unsigned int i = 0; i < nr_children; ++i) {
+			//get the child node
+			//get the i pointer to the child node
+			const	implicit_base<T>* child = implicit_group<T>::get_implicit_child(i);
+			//compute the vaule of the implicit function at p for the child node
+			double child_value = child->evaluate(p);
+			//choose the minimum vaule
+			if (child_value < value) {
+				value = child_value;
+				selected_i = i; // update selected_i to the index of the child that gives the minimum value
+			}
+		}
+
+
+
 
 		return value;
 	}
@@ -39,6 +61,9 @@ public:
 		double f_p = std::numeric_limits<double>::infinity();
 
 		// Task 1.1b: Evaluate the union operator at p.
+		unsigned int union_index;
+
+		f_p = eval_and_get_index(p, union_index);
 
 		return f_p;
 	}
@@ -48,8 +73,18 @@ public:
 		vec_type grad_f_p(0, 0, 0);
 
 		// Task 1.1b: Return the gradient of the union operator at p
+		unsigned int target_index;
 
-		return grad_f_p;
+		//compute the value of the union operator at p and get the index of the child that gives the minimum value
+
+		eval_and_get_index(p, target_index);
+
+		const implicit_base<T>* target_child = implicit_group<T>::get_implicit_child(target_index);
+
+		
+
+		//we need to return the child's gradient at p
+		return target_child->evaluate_gradient(p);
 	}
 };
 
@@ -65,11 +100,29 @@ public:
 
 	T eval_and_get_index(const pnt_type& p, unsigned int& selected_i) const
 	{
-		T value;
 
 		// Task 1.1b: You can outsource logic here that evaluates the operator function
 		//            and reports the index of the relevant child in selected_i
+		
+		//we need to find the maximum value among the children of the intersection node, so we initialize the value to negative infinity
+		T value = -std::numeric_limits<double>::infinity();
 
+		//then we need to loop through all the children of the intersection node and evaluate the implicit function at p for each child	
+
+		unsigned int nr_children = implicit_group<T>::get_nr_children();
+		//now we traverse all the nodes of the children
+		for (unsigned int i = 0; i < nr_children; ++i) {
+			//get the child node
+			//get the i pointer to the child node
+			const	implicit_base<T>* child = implicit_group<T>::get_implicit_child(i);
+			//compute the vaule of the implicit function at p for the child node
+			double child_value = child->evaluate(p);
+			//choose the maximum vaule
+			if (child_value > value) {
+				value = child_value;
+				selected_i = i; // update selected_i to the index of the child that gives the maximum value
+			}
+		}
 		return value;
 	}
 
@@ -78,6 +131,10 @@ public:
 		double f_p = std::numeric_limits<double>::infinity();
 
 		// Task 1.1b: Evaluate the intersection operator at p.
+
+		unsigned int intersect_index;
+
+		f_p = eval_and_get_index(p, intersect_index);
 
 		return f_p;
 	}
@@ -88,7 +145,15 @@ public:
 
 		// Task 1.1b: Return the gradient of the intersection operator at p
 
-		return grad_f_p;
+		unsigned int target_index;
+
+		//compute the value of the intersection operator at p and get the index of the child that gives the maximum value
+		eval_and_get_index(p, target_index);
+		const implicit_base<T>* target_child = implicit_group<T>::get_implicit_child(target_index);
+
+		//we need to return the child's gradient at p
+
+		return target_child->evaluate_gradient(p);
 	}
 };
 
@@ -104,11 +169,37 @@ public:
 
 	T eval_and_get_index(const pnt_type& p, unsigned int& selected_i) const
 	{
-		T value;
 
 		// Task 1.1b: You can outsource logic here that evaluates the operator function
 		//            and reports the index of the relevant child in selected_i
 
+		//first vaule is possitive, the others are negative, so we initialize the value to negative infinity
+		T value = -std::numeric_limits<double>::infinity();
+
+		unsigned int nr_children = implicit_group<T>::get_nr_children();
+
+		//we need to loop through all the children of the difference node and evaluate the implicit function at p for each child
+
+		for (unsigned int i = 0;i < nr_children;i++) {
+			//get the child node
+			const	implicit_base<T>* child = implicit_group<T>::get_implicit_child(i);
+
+			//compute the vaule of the implicit function at p for the child node
+			double child_value = child->evaluate(p);
+
+			//first is the positive, the others are negetive, because we want to extract the otheres
+			if (i == 0) {
+				value = child_value;
+				selected_i = i; // update selected_i to the index of the child that gives the value
+			}
+			else {
+				if (-child_value > value) {
+					value = -child_value;
+					selected_i = i; // update selected_i to the index of the child that gives the maximum value
+				}
+			
+			}
+		}
 		return value;
 	}
 
@@ -117,6 +208,9 @@ public:
 		double f_p = std::numeric_limits<double>::infinity();
 
 		// Task 1.1b: Evaluate the difference operator at p.
+
+		unsigned int difference_index;
+		f_p = eval_and_get_index(p, difference_index);
 
 		return f_p;
 	}
@@ -127,7 +221,12 @@ public:
 
 		// Task 1.1b: Return the gradient of the difference operator at p
 
-		return grad_f_p;
+		unsigned int target_index;
+		eval_and_get_index(p, target_index);
+		
+		const implicit_base<T>* target_child = implicit_group<T>::get_implicit_child(target_index);
+
+		return target_child->evaluate_gradient(p);
 	}
 };
 
