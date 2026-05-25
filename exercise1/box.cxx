@@ -1,6 +1,7 @@
-﻿#include <cgv/math/fvec.h>
+﻿#include <cmath>
+#include <algorithm>
+#include <cgv/math/fvec.h>
 #include "implicit_primitive.h"
-
 
 template <typename T>
 struct box : public implicit_primitive<T>
@@ -8,85 +9,91 @@ struct box : public implicit_primitive<T>
 	typedef typename implicit_base<T>::vec_type vec_type;
 	typedef typename implicit_base<T>::pnt_type pnt_type;
 
-	box() {}
-	std::string get_type_name() const { return "box"; }
-	void on_set(void* member_ptr) { implicit_base<T>::update_scene(); }
+	vec_type center;
+	vec_type size; 
 
-	/*********************************************************************************/
-	/* Task 1.1a: If you need any auxiliary functions for this task, put them here.  */
-
-	// < your code >
-
+	box() : center(0, 0, 0), size(1.0, 1.0, 1.0)
+	{
 	
+		implicit_base<T>::gui_color = 0x88FF88;
+	}
 
+	std::string get_type_name() const { return "box"; }
 
+	bool self_reflect(cgv::reflect::reflection_handler& rh) {
+		return
+			rh.reflect_member("center_x", center(0)) &&
+			rh.reflect_member("center_y", center(1)) &&
+			rh.reflect_member("center_z", center(2)) &&
+			rh.reflect_member("size_x", size(0)) &&
+			rh.reflect_member("size_y", size(1)) &&
+			rh.reflect_member("size_z", size(2)) && 
+			implicit_primitive<T>::self_reflect(rh);
+	}
 
-	/* [END] Task 1.1a
-	/*********************************************************************************/
+	void create_gui() {
+		provider::add_member_control(this, "center_x", center(0), "value_slider", "min=-5;max=5;ticks=true");
+		provider::add_member_control(this, "center_y", center(1), "value_slider", "min=-5;max=5;ticks=true");
+		provider::add_member_control(this, "center_z", center(2), "value_slider", "min=-5;max=5;ticks=true");
+		provider::add_member_control(this, "size_x", size(0), "value_slider", "min=0.1;max=5;log=true;ticks=true");
+		provider::add_member_control(this, "size_y", size(1), "value_slider", "min=0.1;max=5;log=true;ticks=true");
+		provider::add_member_control(this, "size_z", size(2), "value_slider", "min=0.1;max=5;log=true;ticks=true");
+		implicit_primitive<T>::create_gui();
+	}
 
-	/// Evaluate the implicit box function at p
 	T evaluate(const pnt_type& p) const
 	{
-		double f_p = std::numeric_limits<double>::infinity();
+		vec_type d = p - center;
 
-		// Task 1.1a: Implement a function of p that evaluates to 0 on the unit cube.
-		//            You may use any suitable distance metric.
+		vec_type abs_d(
+			std::abs(d(0)) - size(0),
+			std::abs(d(1)) - size(1),
+			std::abs(d(2)) - size(2)
+		);
 
-	 //to evaluate the implicit box function at p
-	 //we use $$f(x, y, z) = \max(|x|, |y|, |z|) - 1$$
-	//first I need to extract the x, y, z coordinates from the point p
+		vec_type max_abs_d(
+			std::max<T>(abs_d(0), 0.0),
+			std::max<T>(abs_d(1), 0.0),
+			std::max<T>(abs_d(2), 0.0)
+		);
 
-		double abs_x = std::abs(p[0]);
-
-		double abs_y = std::abs(p[1]);
-
-		double abs_z = std::abs(p[2]);
-
-		//second I need to find the maximum of the absolute values of x, y, z
-
-		double max_abs = std::max(abs_x, std::max(abs_y, abs_z));
-
-		//finally I need to subtract 1 from the maximum absolute value to get the implicit function value
-		f_p = max_abs - 1.0;
+		double f_p = max_abs_d.length() + std::min<T>(std::max<T>(abs_d(0), std::max<T>(abs_d(1), abs_d(2))), 0.0);
 
 		return f_p;
 	}
 
-	/// Evaluate the gradient of the implicit box function at p
 	vec_type evaluate_gradient(const pnt_type& p) const
 	{
-		vec_type grad_f_p(0, 0, 0);
+		vec_type d = p - center;
 
-		// Task 1.1a: Return the gradient of the function at p.
-		
-		//first i need to extract the x, y, z coordinates from the point p
+		vec_type s(d(0) > 0 ? 1.0 : -1.0,
+			d(1) > 0 ? 1.0 : -1.0,
+			d(2) > 0 ? 1.0 : -1.0);
 
-	
+		vec_type abs_d(std::abs(d(0)) - size(0),
+			std::abs(d(1)) - size(1),
+			std::abs(d(2)) - size(2));
 
-		double abs_x = std::abs(p[0]);
-
-		double abs_y = std::abs(p[1]);
-
-		double abs_z = std::abs(p[2]);
-
-		//second I need to know which the coordinate has the maximum absolute value
-
-		if (abs_x >= abs_y && abs_x >= abs_z) {
-			grad_f_p[0] = (p[0] >= 0) ? 1.0 : -1.0; // x has the maximum absolute value
+		if (abs_d(0) <= 0.0 && abs_d(1) <= 0.0 && abs_d(2) <= 0.0) {
+			if (abs_d(0) > abs_d(1) && abs_d(0) > abs_d(2)) return vec_type(s(0), 0.0, 0.0);
+			if (abs_d(1) > abs_d(0) && abs_d(1) > abs_d(2)) return vec_type(0.0, s(1), 0.0);
+			return vec_type(0.0, 0.0, s(2));
 		}
-		else if (abs_y >= abs_x && abs_y >= abs_z) {
-			grad_f_p[1] = (p[1] >= 0) ? 1.0 : -1.0; //  y has the maximum absolute value
+
+		vec_type max_abs_d(std::max<T>(abs_d(0), 0.0),
+			std::max<T>(abs_d(1), 0.0),
+			std::max<T>(abs_d(2), 0.0));
+
+		T len = max_abs_d.length();
+
+		if (len > T(1e-8)) {
+			return vec_type((max_abs_d(0) / len) * s(0),
+				(max_abs_d(1) / len) * s(1),
+				(max_abs_d(2) / len) * s(2));
 		}
 		else {
-			grad_f_p[2] = (p[2] >= 0) ? 1.0 : -1.0; // z has the maximum absolute value
+			return vec_type(0.0, 0.0, 0.0);
 		}
-
-		return grad_f_p;
-	}
-
-	void create_gui()
-	{
-		implicit_primitive<T>::create_gui();
 	}
 };
 

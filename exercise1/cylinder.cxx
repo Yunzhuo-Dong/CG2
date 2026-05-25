@@ -2,57 +2,84 @@
 #include <cgv/math/fvec.h>
 #include "implicit_primitive.h"
 
-
 template <typename T>
-struct cylinder :  public implicit_primitive<T>
+struct cylinder : public implicit_primitive<T>
 {
 	typedef typename implicit_base<T>::vec_type vec_type;
 	typedef typename implicit_base<T>::pnt_type pnt_type;
 
-	cylinder() { implicit_base<T>::gui_color = 0xFF8888; }
+	vec_type center;
+	double radius;
+	vec_type direction;
+
+	cylinder() : center(0, 0, 0), radius(1.0), direction(0, 0, 1)
+	{
+		implicit_base<T>::gui_color = 0xFF8888;
+	}
+
 	std::string get_type_name() const { return "cylinder"; }
+
+	bool self_reflect(cgv::reflect::reflection_handler& rh) {
+		return
+			rh.reflect_member("center_x", center(0)) &&
+			rh.reflect_member("center_y", center(1)) &&
+			rh.reflect_member("center_z", center(2)) &&
+			rh.reflect_member("radius", radius) &&
+			rh.reflect_member("direction_x", direction(0)) &&
+			rh.reflect_member("direction_y", direction(1)) &&
+			rh.reflect_member("direction_z", direction(2)) &&
+			implicit_primitive<T>::self_reflect(rh);
+	}
+	
+	
+void create_gui() {
+		provider::add_member_control(this, "center_x", center(0), "value_slider", "min=-5;max=5;ticks=true");
+		provider::add_member_control(this, "center_y", center(1), "value_slider", "min=-5;max=5;ticks=true");
+		provider::add_member_control(this, "center_z", center(2), "value_slider", "min=-5;max=5;ticks=true");
+		provider::add_member_control(this, "radius", radius, "value_slider", "min=0.1;max=5;log=true;ticks=true");
+		provider::add_member_control(this, "direction_x", direction(0), "value_slider", "min=-1;max=1;ticks=true");
+		provider::add_member_control(this, "direction_y", direction(1), "value_slider", "min=-1;max=1;ticks=true");
+		provider::add_member_control(this, "direction_z", direction(2), "value_slider", "min=-1;max=1;ticks=true");
+		implicit_primitive<T>::create_gui();
+	}
 
 	/// Evaluate the implicit cylinder function at p
 	T evaluate(const pnt_type& p) const
 	{
-		double f_p = std::numeric_limits<double>::infinity();
+		vec_type dir = direction;
+		T d_len = dir.length();
 
-		// Task 1.1a: Implement an algebraic function of p that evaluates to 0 on the
-		//            unit cylinder along an axis.
-		//$$f(x, y, z) = x^2 + y^2 - 1$$
+		
+		dir = d_len > 1e-8 ? dir / d_len : vec_type(0, 0, 1);
 
-		double x = p[0];
+		vec_type pa = p - center;
 
-		double y = p[1];
-
-		f_p = x * x + y * y - 1.0;
-
-
-		return f_p;
+		vec_type v_perp = pa - dot(pa, dir) * dir;
+		
+		return v_perp.length() - radius;
 	}
 
 	/// Evaluate the gradient of the implicit cylinder function at p
 	vec_type evaluate_gradient(const pnt_type& p) const
 	{
-		vec_type grad_f_p(0, 0, 0);
+		vec_type dir = direction;
+		T d_len = dir.length();
 
-		// Task 1.1a: Return the gradient of the function at p.
-		// grad_f_p=f$(2x, 2y, 0)$
-		double x = p[0];
+	
+		dir = d_len > 1e-8 ? dir / d_len : vec_type(0, 0, 1);
 
-		double y = p[1];
+		vec_type pa = p - center;
+		vec_type v_perp = pa - dot(pa, dir) * dir;
 
-		grad_f_p[0] = 2.0 * x;
+		T len = v_perp.length();
+		if (len < 1e-8) {
+			return vec_type(0, 0, 0);
+		}
 
-		grad_f_p[1] = 2.0 * y;
-
-		return grad_f_p;
-	}
-
-	void create_gui()
-	{
-		implicit_primitive<T>::create_gui();
+		return v_perp / len;
 	}
 };
 
-scene_factory_registration<cylinder<double> > sfr_cylinder("cylinder;Y");
+
+
+scene_factory_registration<cylinder<double> > sfr_cylinder("cylinder;C");

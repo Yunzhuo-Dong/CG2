@@ -36,38 +36,49 @@ struct sphere : public implicit_primitive<T>
 
 	}
 
+	//create gui
+	void create_gui() {
+		implicit_primitive<T>::create_gui();
+		provider::add_member_control(this, "center_x", center(0), "value_slider", "min=-5;max=5;ticks=true");
+
+		provider::add_member_control(this, "center_y", center(1), "value_slider", "min=-5;max=5;ticks=true");
+
+		provider::add_member_control(this, "center_z", center(2), "value_slider", "min=-5;max=5;ticks=true");
+
+		provider::add_member_control(this, "radius", radius, "value_slider", "min=0.1;max=5;log=true;ticks=true");
+	}
+
+
+
 
 	/// Evaluate the sphere quadric at p
 	T evaluate(const pnt_type& p) const
 	{
-		return ((p[0] - center[0]) * (p[0] - center[0]) + (p[1] - center[1]) * (p[1] - center[1]) + (p[2] - center[2]) * (p[2] - center[2])) - radius * radius;
+		//$ || P - Center || -Radius = 0$。
+		return (p - center).length() - radius;
 	}
 
 	/// Evaluate the gradient of the sphere quadric at p
 	vec_type evaluate_gradient(const pnt_type& p) const
 	{
-		vec_type grad_f_p(0, 0, 0);
+		vec_type d = p - center;
 
-		// Task 1.1a: Return the gradient of the function at p.
-		double x = p[0];
+		T len = d.length();
+		if (len < 1e-7) {
+		
+			return vec_type(0, 0, 0);
+		
+		}
 
-		double y = p[1];
+		//mathematics formular will look like $\frac{\partial}{\partial x}\sqrt{x^2+y^2+z^2} = \frac{x}{\sqrt{x^2+y^2+z^2}} = \frac{x}{len}$
 
-		double z = p[2];
 
-		grad_f_p[0] = 2.0 * x;
-
-		grad_f_p[1] = 2.0 * y;
-
-		grad_f_p[2] = 2.0 * z;
+		vec_type grad_f_p = d / len;
 
 		return grad_f_p;
 	}
 
-	void create_gui()
-	{
-		implicit_primitive<T>::create_gui();
-	}
+	
 };
 
 scene_factory_registration<sphere<double> > sfr_sphere("sphere;S");

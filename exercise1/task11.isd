@@ -1,21 +1,16 @@
-
-% Task 21: Sphere minus three orthogonal cylinders
+% Task 1.1c
 numeric_gradient[epsilon=0.0625;numeric=false](
     difference(
-        sphere,
+        sphere[radius=1.0],
         union(
             % Z-axis cylinder
-            scale[sx=0.6;sy=0.6](cylinder),
+            cylinder[radius=0.6;direction_x=0.0;direction_y=0.0;direction_z=1.0],
             
-            % X-axis cylinder (rotated 90 degrees around Y-axis)
-            rotate[a=90.0;nx=0.0;ny=1.0;nz=0.0](
-                scale[sx=0.6;sy=0.6](cylinder)
-            ),
+            % X-axis cylinder
+            cylinder[radius=0.6;direction_x=1.0;direction_y=0.0;direction_z=0.0],
             
-            % Y-axis cylinder (rotated 90 degrees around X-axis)
-            rotate[a=90.0;nx=1.0;ny=0.0;nz=0.0](
-                scale[sx=0.6;sy=0.6](cylinder)
-            )
+            % Y-axis cylinder
+            cylinder[radius=0.6;direction_x=0.0;direction_y=1.0;direction_z=0.0]
         )
     )
 )
