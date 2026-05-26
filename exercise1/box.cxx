@@ -65,15 +65,21 @@ struct box : public implicit_primitive<T>
 	vec_type evaluate_gradient(const pnt_type& p) const
 	{
 		vec_type d = p - center;
+		//code from https://iquilezles.org/articles/distfunctions/
 
+		//the original code is in glsl system I change into c++ system and add some check to avoid the zero division
+		
+		//s for the sign of the gradient
 		vec_type s(d(0) > 0 ? 1.0 : -1.0,
 			d(1) > 0 ? 1.0 : -1.0,
 			d(2) > 0 ? 1.0 : -1.0);
 
+		//the abs don't support vector computation so I compute the abs for each component and minus the size for each component
 		vec_type abs_d(std::abs(d(0)) - size(0),
 			std::abs(d(1)) - size(1),
 			std::abs(d(2)) - size(2));
 
+		//want to find the most important component of the gradient
 		if (abs_d(0) <= 0.0 && abs_d(1) <= 0.0 && abs_d(2) <= 0.0) {
 			if (abs_d(0) > abs_d(1) && abs_d(0) > abs_d(2)) return vec_type(s(0), 0.0, 0.0);
 			if (abs_d(1) > abs_d(0) && abs_d(1) > abs_d(2)) return vec_type(0.0, s(1), 0.0);
@@ -84,9 +90,11 @@ struct box : public implicit_primitive<T>
 			std::max<T>(abs_d(1), 0.0),
 			std::max<T>(abs_d(2), 0.0));
 
+		//normalize the gradient
 		T len = max_abs_d.length();
 
 		if (len > T(1e-8)) {
+			//the gradient is the normalized vector of the max_abs_d with the sign s
 			return vec_type((max_abs_d(0) / len) * s(0),
 				(max_abs_d(1) / len) * s(1),
 				(max_abs_d(2) / len) * s(2));

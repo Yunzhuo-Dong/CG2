@@ -51,11 +51,16 @@ void create_gui() {
 
 		
 		dir = d_len > 1e-8 ? dir / d_len : vec_type(0, 0, 1);
-
+		
+		
+		
 		vec_type pa = p - center;
 
+
+		//then we project this vector onto the direction of the cylinder to get the component of the vector that is parallel to the cylinder's axis.
 		vec_type v_perp = pa - dot(pa, dir) * dir;
 		
+		//// Finally, we compute the length of this perpendicular component and subtract the radius of the cylinder to get the value of the implicit function at p.
 		return v_perp.length() - radius;
 	}
 
