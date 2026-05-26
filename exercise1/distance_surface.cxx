@@ -88,21 +88,54 @@ double distance_surface<T>::get_min_distance_vector(const pnt_type& p, vec_type&
 	return min_dist;
 }
 
+
 template <typename T>
 T distance_surface<T>::evaluate(const pnt_type& p) const
 {
-	double f_p = std::numeric_limits<double>::infinity();
+	//double f_p = std::numeric_limits<double>::infinity();
 
-	// Task 1.2: Evaluate the distance surface function at p.
+	//// Task 1.2: Evaluate the distance surface function at p.
 
-	vec_type min_vec;
+	//vec_type min_vec;
 
-	// compute closest distance to skelton
-	double min_dist = get_min_distance_vector(p, min_vec);
+	//// compute closest distance to skelton
+	//double min_dist = get_min_distance_vector(p, min_vec);
 
-	// I subtract radius here becuase contouring expects
-	// the actual surface at iso value 0
-	f_p = min_dist - r;
+	//// I subtract radius here becuase contouring expects
+	//// the actual surface at iso value 0
+	//f_p = min_dist - r;
+
+	//return f_p;
+	double f_p = 0.0;
+	/////////////////////////////////////////////////////// Bonus Section //////////////////////////////////////////////////////////
+	// Bonus Task 1.3.3:
+	// Instead of only taking the minimum distance like in task 1.2,
+	// I now sum smooth contributions from all edges.
+	// This removes the sharp creases from concave regions,
+	// but can also create some bulging artefacts like shown in lecture.
+
+	// I used a simple gaussian convolution becuase it was easier
+	// to understand and implement with the already existing code.
+
+	for (size_t i = 0; i < (skeleton<T>::edges).size(); ++i)
+	{
+		// get distance vector from current edge to point
+		vec_type dist_vec = get_edge_distance_vector(i, p);
+
+		// squared distance is enough for gaussian kernel
+		double dist_sq = dist_vec.sqr_length();
+
+		// gaussian contribution from current edge
+		double contribution =
+			std::exp(-dist_sq / (r * r));
+
+		// add contribution to field value
+		f_p += contribution;
+	}
+
+	// subtract threshold so iso surface still appears at value 0
+	// I used 1.0 here after trying a few values and it looked best
+	f_p -= 1.0;
 
 	return f_p;
 }
@@ -114,19 +147,41 @@ typename distance_surface<T>::vec_type distance_surface<T>::evaluate_gradient(co
 
 	// Task 1.2: Return the gradient of the distance surface function at p.
 
-	vec_type min_vec;
+	//vec_type min_vec;
 
-	// get vector to closest edge
-	get_min_distance_vector(p, min_vec);
+	//// get vector to closest edge
+	//get_min_distance_vector(p, min_vec);
 
-	T len = min_vec.length();
+	//T len = min_vec.length();
 
-	// I added small epsilon check here to avoid deviding by zero
-	// if point lies exactly on the skelton
-	if (len > T(1e-8))
+	//// I added small epsilon check here to avoid deviding by zero
+	//// if point lies exactly on the skelton
+	//if (len > T(1e-8))
+	//{
+	//	// normalize vector to get gradient direction
+	//	grad_f_p = min_vec / len;
+	//}
+
+	//return grad_f_p;
+	/////////////////////////////////////////////////////// Bonus Section //////////////////////////////////////////////////////////
+	// Bonus Task 1.3.3:
+	// gradient for the convolution surface.
+	// Every edge contributes smoothly to the final gradient.
+
+	for (size_t i = 0; i < (skeleton<T>::edges).size(); ++i)
 	{
-		// normalize vector to get gradient direction
-		grad_f_p = min_vec / len;
+		vec_type dist_vec = get_edge_distance_vector(i, p);
+
+		double dist_sq = dist_vec.sqr_length();
+
+		double weight =
+			std::exp(-dist_sq / (r * r));
+
+		// gradient of gaussian kernel
+		grad_f_p +=
+			(-2.0 / (r * r)) *
+			weight *
+			dist_vec;
 	}
 
 	return grad_f_p;
