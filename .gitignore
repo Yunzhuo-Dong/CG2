@@ -14,3 +14,31 @@ ipch
 # Ignore JetBrains configurations
 .idea
 .run
+
+# Local package/cache folders
+.codex_mesh_pkgs/
+
+# Build folders
+cmake-build/
+build/
+out/
+.vs/
+.vscode/
+
+# Visual Studio files
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Compiled binaries
+*.exe
+*.dll
+*.pdb
+*.obj
+*.lib
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmakeexercise2_work/

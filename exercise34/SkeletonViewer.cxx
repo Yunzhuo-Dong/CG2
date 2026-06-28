@@ -1,4 +1,4 @@
-﻿// This source code is property of the Computer Graphics and Visualization 
+﻿// This source code is property of the Computer Graphics and Visualizaparent * node->calculate_transform_prev_to_current_without_dofs()tion 
 // chair of the TU Dresden. Do not distribute! 
 // Copyright (C) CGV TU Dresden - All Rights Reserved
 //
@@ -35,10 +35,126 @@ SkeletonViewer::SkeletonViewer(DataStore* data)
 
 //draws a part of a skeleton, represented by the given root node
 void SkeletonViewer::draw_skeleton_subtree(
-	Bone* node, const Mat4& parent_system_transf_local_to_global, context& ctx, int level
-){
-	////
+	Bone* node,
+	const Mat4& parent_system_transf_local_to_global,
+	context& ctx,
+	int level
+) {
 	// Task 3.2, 3.3, 4.3: Visualize the skeleton
+
+	if (node == nullptr)
+		return;
+
+	// ------------------------------------------------------------
+	// Compute current bone local -> global transform.
+	//
+	// parent_system_transf_local_to_global:
+	//     parent local -> global
+	//
+	// node->calculate_transform_prev_to_current_without_dofs():
+	//     current local -> parent local
+	//
+	// Therefore:
+	//     current local -> parent local -> global
+	// ------------------------------------------------------------
+	Mat4 current_system_transf_local_to_global =
+		parent_system_transf_local_to_global
+		*
+		node->calculate_transform_prev_to_current_without_dofs();
+
+	// Bone endpoints in the current bone's local coordinate system.
+	Vec4 root_local = node->get_bone_local_root_position();
+	Vec4 tip_local = node->get_bone_local_tip_position();
+
+	// Transform endpoints into global coordinates for drawing.
+	Vec4 root_global =
+		current_system_transf_local_to_global * node->get_bone_local_root_position();
+
+	Vec4 tip_global =
+		current_system_transf_local_to_global * node->get_bone_local_tip_position();
+
+	
+
+
+	
+	// draw current bone as a white line segment.
+	/*glColor3f(1.0f, 1.0f, 1.0f);
+
+	glBegin(GL_LINES);
+
+	glVertex3f(
+		root_global4.x(),
+		root_global4.y(),
+		root_global4.z()
+	);
+
+	glVertex3f(
+		tip_global4.x(),
+		tip_global4.y(),
+		tip_global4.z()
+	);
+
+	glEnd();*/
+	
+	Vec3 arrow_start(
+		root_global.x(),
+		root_global.y(),
+		root_global.z()
+	);
+
+	Vec3 arrow_end(
+		tip_global.x(),
+		tip_global.y(),
+		tip_global.z()
+	);
+
+	float dx = tip_global.x() - root_global.x();
+	float dy = tip_global.y() - root_global.y();
+	float dz = tip_global.z() - root_global.z();
+
+	float len = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+	if (len > 1e-6f)
+	{
+		cgv::media::illum::surface_material local_material = material;
+
+		int color_id = level % 6;
+
+		if (color_id == 0)
+			local_material.diffuse_reflectance = { 1.0f, 0.2f, 0.2f };
+		else if (color_id == 1)
+			local_material.diffuse_reflectance = { 0.2f, 1.0f, 0.2f };
+		else if (color_id == 2)
+			local_material.diffuse_reflectance = { 0.2f, 0.4f, 1.0f };
+		else if (color_id == 3)
+			local_material.diffuse_reflectance = { 1.0f, 1.0f, 0.2f };
+		else if (color_id == 4)
+			local_material.diffuse_reflectance = { 1.0f, 0.2f, 1.0f };
+		else
+			local_material.diffuse_reflectance = { 0.2f, 1.0f, 1.0f };
+
+		ctx.set_material(local_material);
+
+		ctx.tesselate_arrow(
+			arrow_start,
+			arrow_end,
+			0.06,
+			2.0,
+			0.3,
+			16,
+			false
+		);
+	}
+
+	for (int i = 0; i < node->childCount(); ++i)
+	{
+		draw_skeleton_subtree(
+			node->child_at(i),
+			current_system_transf_local_to_global,
+			ctx,
+			level + 1
+		);
+	}
 }
 
 void SkeletonViewer::timer_event(double, double dt)
@@ -296,9 +412,22 @@ void SkeletonViewer::generate_bone_gui(Bone* bone)
 
 void SkeletonViewer::draw(context& ctx)
 {
-	////
-	// Task 3.3: If you require it, extend this method with additional logic
-
+	//3.2 draw skeleton
 	if (data->get_skeleton() != nullptr)
-		draw_skeleton_subtree(data->get_skeleton()->get_root(), data->get_skeleton()->get_origin(), ctx, 0);
+	{
+		auto& prog = ctx.ref_surface_shader_program();
+
+		prog.enable(ctx);
+
+		ctx.set_material(material);
+
+		draw_skeleton_subtree(
+			data->get_skeleton()->get_root(),
+			data->get_skeleton()->get_origin(),
+			ctx,
+			0
+		);
+
+		prog.disable(ctx);
+	}
 }
