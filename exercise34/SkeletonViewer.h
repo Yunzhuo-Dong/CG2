@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "DataStore.h"
+#include "Animation.h"
 
 #include <cgv/gui/trigger.h>
 #include <cgv/gui/provider.h>
@@ -29,6 +30,11 @@ private:
 	gui_group_ptr tree_view;
 	gui_group_ptr bone_group;
 	cgv::media::illum::surface_material material;
+
+	std::shared_ptr<Animation> animation;
+	int current_animation_frame;
+	bool animation_running;
+	double animation_time_accumulator;
 
 
 	// Maps gui elements in the tree view to a specific bone

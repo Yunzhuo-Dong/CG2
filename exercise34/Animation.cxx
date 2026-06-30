@@ -82,4 +82,28 @@ int Animation::frame_count() const { return (int)frames.size(); }
 void Animation::apply_frame(int frame) const
 {
 	/*Bonus task: apply animated DoF scalar parameter from given frame to the skeleton. */
+
+	if (frame < 0 || frame >= frame_count())
+		return;
+
+	const auto& current_frame = frames[frame];
+
+	for (const auto& frame_bone : current_frame)
+	{
+		Bone* bone = frame_bone.bone;
+
+		if (bone == nullptr)
+			continue;
+
+		int n = bone->dof_count();
+
+		if ((int)frame_bone.dof_values.size() < n)
+			n = (int)frame_bone.dof_values.size();
+
+		for (int i = 0; i < n; ++i)
+		{
+			bone->get_dof(i)->set_value(frame_bone.dof_values[i]);
+		}
+	}
+
 }
