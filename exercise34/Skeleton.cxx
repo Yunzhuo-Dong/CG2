@@ -9,6 +9,10 @@
 #include <string>
 #include <sstream>
 
+#include <algorithm>
+#include <functional>
+#include <cmath>
+
 #include "math_helper.h"
 
 Skeleton::Skeleton()
@@ -269,8 +273,89 @@ void Skeleton::write_pinocchio_file(const std::string& filename)
 	if (o)
 	{
 		/*Task 4.1: Write Pinocchio file into o */
+
+		//if no bones, write nothing
+
+		if (root == nullptr)
+		{
+			o.close();
+			return;
+		}
+
+
+		// 1. Get the bounding box calculated by postprocess()
+
+
+		Vec3 min_corner = getMin();
+		Vec3 max_corner = getMax();
+
+		Vec3 box_size = max_corner - min_corner;
+
+
+		float largest_size =
+			std::max(
+				box_size.x(),
+				std::max(box_size.y(), box_size.z())
+			);
+
+
+
+			Vec3 center =
+			(min_corner + max_corner) * 0.5f;
+
+		// The next available Pinocchio node ID.
+		int next_id = 0;
+
+
+		// 2. Define a recursive depth-first traversal
+		std::function<void(Bone*, const Vec3&, int)> write_bone;
+
+		write_bone =
+			[&](Bone* bone, //lamda function, can be visited as local vairables 
+				const Vec3& bone_root_position,
+				int parent_id)
+			{
+				// Find the tip of this bone in world coordinates.
+				Vec3 bone_tip = bone_root_position + bone->get_direction_in_world_space() * bone->get_length();
+
+				int current_id = next_id;
+				++next_id;
+
+				// Scale and translate the point into the unit cube.
+				Vec3 normalized_position =
+					(bone_tip - center) / largest_size
+					+ Vec3(0.5f, 0.5f, 0.5f);
+
+				// Pinocchio format:
+			   // ID x y z parent_ID
+				o << current_id << " "
+					<< normalized_position.x() << " "
+					<< normalized_position.y() << " "
+					<< normalized_position.z() << " "
+					<< parent_id << "\n";
+				// Visit children.
+				for (int i = 0; i < bone->childCount(); ++i)
+				{
+					write_bone(
+						bone->child_at(i),
+						bone_tip,
+						current_id
+					);
+				}
+			};
+		// -------------------------------------------------
+	   // 3. Start DFS at the root
+	   // -------------------------------------------------
+
+		write_bone(
+			root,
+			Vec3(0.0f, 0.0f, 0.0f),
+			-1
+		);
 	}
+
 	o.close();
+
 }
 
 
@@ -284,16 +369,167 @@ void Skeleton::read_pinocchio_file(std::string filename)
 #else
 	o.open(filename, std::ios::in);
 #endif
+
+	bool success = false;
+
 	if (o)
 	{
 		/*Task 4.3: Read Pinocchio file */
+
+		//1: Rebuild the fitted rest pose from Pinocchio joint positions.
+		//2: Recover each bone from its fitted root and tip., and align the coordinate
+		//3: use parent_ tip=child_ root to iterate the function
+		//4:Recompute the skeleton matrices after adaptation.
+
+		if (root == nullptr)
+		{
+			o.close();
+			return;
+		}
+
+		reset_bounding_box();
+
+		const float epsilon = 0.000001f;
+
+		std::function<bool(Bone*, const Vec3&)> read_and_adjust;
+
+		read_and_adjust = [&](Bone* bone, const Vec3& parent_position)
+			{
+				// One Pinocchio line:
+				// node_id x y z parent_id
+				int node_id;
+				int file_parent_id;
+
+				float x;
+				float y;
+				float z;
+
+				if (!(o >> node_id >> x >> y >> z >> file_parent_id))
+				{
+					return false;
+				}
+
+				Vec3 current_position(x, y, z);
+
+				//add joint position or tip 
+				add_point(current_position);
+
+				if (bone == root)
+				{
+					//The root node has no parent.
+					set_origin(current_position);
+				}
+				else
+				{
+					//we need to find the rotation of the old
+					Vec3 old_direction = bone->get_direction_in_world_space();
+
+					float old_direction_length = old_direction.length();
+
+					if (old_direction_length > epsilon)
+					{
+						old_direction = old_direction / old_direction_length;
+					}
+
+					//parent_position   = current bone root
+					// current_position  = current bone tip
+
+					Vec3 new_offset = current_position - parent_position;
+
+					float new_length = new_offset.length();
+
+					if (new_length <= epsilon)
+					{
+						return false;
+					}
+
+					Vec3 new_direction = new_offset / new_length;
+
+					//Adjust the bone coordinate system,We need a rotation R for: R * old_direction = new_direction
+
+					if (old_direction_length > epsilon)
+					{
+						Vec3 rotation_axis = cgv::math::cross(old_direction, new_direction);
+
+						float axis_length = rotation_axis.length();
+
+						float cosine = cgv::math::dot(old_direction, new_direction);
+
+						// Floating-point calculations can produce
+
+						cosine = std::max(-1.0f, std::min(1.0f, cosine));
+
+						if (axis_length > epsilon)
+						{
+							//the two directions are not parallel.
+							rotation_axis = rotation_axis / axis_length;
+
+							float angle_degrees = std::acos(cosine) * 180.0f / PI;
+
+							AtomicRotationTransform* correction = new AtomicRotationTransform(rotation_axis);
+
+							correction->set_value(angle_degrees);
+
+							bone->add_axis_rotation(correction);
+						}
+						else if (cosine < 0.0f)
+						{
+							//old_direction and new_direction point in exactly opposite directions.
+
+							//Their cross product is zero
+
+							Vec3 helper_axis;
+
+							if (std::abs(old_direction.x()) < 0.9f)
+							{
+								helper_axis = Vec3(1.0f, 0.0f, 0.0f);
+							}
+							else
+							{
+								helper_axis = Vec3(0.0f, 1.0f, 0.0f);
+							}
+
+							rotation_axis = cgv::math::cross(old_direction, helper_axis);
+
+							rotation_axis.normalize();
+
+							AtomicRotationTransform* correction = new AtomicRotationTransform(rotation_axis);
+
+							correction->set_value(180.0f);
+
+							bone->add_axis_rotation(correction);
+						}
+					}
+
+					// Store the new fitted rest-pose geometry
+
+					bone->set_length(new_length);
+					bone->set_direction_in_world_space(new_direction);
+				}
+
+				for (int i = 0; i < bone->childCount(); ++i)
+				{
+					bool child_success = read_and_adjust(bone->child_at(i), current_position);
+
+					if (!child_success)
+					{
+						return false;
+					}
+				}
+
+				return true;
+			};
+
+		success = read_and_adjust(root, Vec3(0.0f, 0.0f, 0.0f));
 	}
 
 	o.close();
 
-	postprocess(root, get_origin_vec());
+	if (success)
+	{
+		postprocess(root, get_origin_vec());
+	}
 }
-
 
 
 void Skeleton::get_skinning_matrices(std::vector<Mat4>& matrices)

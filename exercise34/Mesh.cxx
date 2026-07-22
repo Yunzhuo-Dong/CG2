@@ -145,12 +145,63 @@ void Mesh::read_attachment(std::string filename)
 
 	std::vector<ivec4> bone_indices;
 	std::vector<Vec4> bone_weights;
-
+	//one line is one vertex
 	while (std::getline(f, line))
 	{
 		/*Task 4.4: Load pinocchio attachment */
+
+		if (line.empty()) {
+			continue;
+		}
+
+		std::stringstream ss(line);
+		//every top() return the max element
+		std::priority_queue<std::pair<float, int>> weights;
+		//0 is root we ignore
+		float weight;
+		int bone_id = 1;
+
+		while (ss >> weight)
+		{
+			weights.push(std::make_pair(weight, bone_id));
+			++bone_id;
+		}
+		//every vertex has 4 bones, we select the 4 largest weights
+		ivec4 selected_indices(0, 0, 0, 0);
+		Vec4 selected_weights(0.0f, 0.0f, 0.0f, 0.0f);
+
+		float weight_sum = 0.0f;
+
+		for (int i = 0; i < 4 && !weights.empty(); ++i)
+		{
+			selected_weights[i] = weights.top().first;
+			selected_indices[i] = weights.top().second;
+			weight_sum += selected_weights[i];
+			weights.pop();
+		}
+		//normolize weights
+		if (weight_sum > 0.0f)
+		{
+			for (int i = 0; i < 4; ++i)
+			{
+				selected_weights[i] /= weight_sum;
+			}
+		}
+		bone_indices.push_back(selected_indices);
+		bone_weights.push_back(selected_weights);
+
+	}
+	if (bone_indices.empty() || bone_weights.empty())
+	{
+		f.close();
+		return;
 	}
 
+	if (bone_indices.size() != positions.size())
+	{
+		f.close();
+		return;
+	}
 	glBindBuffer(GL_ARRAY_BUFFER, boneIndexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, bone_indices.size() * sizeof(ivec4), &bone_indices[0], GL_STATIC_DRAW);
 
