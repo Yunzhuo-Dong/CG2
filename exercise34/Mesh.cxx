@@ -1,4 +1,4 @@
-﻿// This source code is property of the Computer Graphics and Visualization 
+// This source code is property of the Computer Graphics and Visualization 
 // chair of the TU Dresden. Do not distribute! 
 // Copyright (C) CGV TU Dresden - All Rights Reserved
 //
@@ -42,7 +42,7 @@ bool Mesh::init_shaders(cgv::render::context& ctx)
 }
 
 Mesh::Mesh()
-	: has_attachment(false)
+	: n_bones(0), has_attachment(false)
 {
 	glGenBuffers(1, &indexBuffer);
 	glGenBuffers(1, &positionBuffer);
@@ -81,6 +81,11 @@ Mesh::~Mesh()
 bool Mesh::read_obj(const char* filename)
 {
 	std::ifstream f(filename);
+
+	if (!f)
+	{
+		return false;
+	}
 
 	std::string line;
 
@@ -124,20 +129,33 @@ bool Mesh::read_obj(const char* filename)
 
 	f.close();
 	
+	if (positions.empty() || indices.empty())
+	{
+		return false;
+	}
+
+	glBindVertexArray(vao);
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);	
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
-	glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(cgv::math::fvec<float, 3>), &positions[0], GL_STATIC_DRAW);	
+	glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(cgv::math::fvec<float, 3>), positions.data(), GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
 
 	return true;
 }
 
 
-
 void Mesh::read_attachment(std::string filename)
 {
 	std::ifstream f(filename);
+
+	if (!f)
+	{
+		return;
+	}
 
 	std::string line;
 
@@ -145,19 +163,21 @@ void Mesh::read_attachment(std::string filename)
 
 	std::vector<ivec4> bone_indices;
 	std::vector<Vec4> bone_weights;
-	//one line is one vertex
+
+	has_attachment = false;
+
 	while (std::getline(f, line))
 	{
 		/*Task 4.4: Load pinocchio attachment */
 
-		if (line.empty()) {
+		if (line.empty())
+		{
 			continue;
 		}
 
 		std::stringstream ss(line);
-		//every top() return the max element
 		std::priority_queue<std::pair<float, int>> weights;
-		//0 is root we ignore
+
 		float weight;
 		int bone_id = 1;
 
@@ -166,7 +186,7 @@ void Mesh::read_attachment(std::string filename)
 			weights.push(std::make_pair(weight, bone_id));
 			++bone_id;
 		}
-		//every vertex has 4 bones, we select the 4 largest weights
+
 		ivec4 selected_indices(0, 0, 0, 0);
 		Vec4 selected_weights(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -179,7 +199,7 @@ void Mesh::read_attachment(std::string filename)
 			weight_sum += selected_weights[i];
 			weights.pop();
 		}
-		//normolize weights
+
 		if (weight_sum > 0.0f)
 		{
 			for (int i = 0; i < 4; ++i)
@@ -187,10 +207,11 @@ void Mesh::read_attachment(std::string filename)
 				selected_weights[i] /= weight_sum;
 			}
 		}
+
 		bone_indices.push_back(selected_indices);
 		bone_weights.push_back(selected_weights);
-
 	}
+
 	if (bone_indices.empty() || bone_weights.empty())
 	{
 		f.close();
@@ -202,16 +223,28 @@ void Mesh::read_attachment(std::string filename)
 		f.close();
 		return;
 	}
+
 	glBindBuffer(GL_ARRAY_BUFFER, boneIndexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, bone_indices.size() * sizeof(ivec4), &bone_indices[0], GL_STATIC_DRAW);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		bone_indices.size() * sizeof(ivec4),
+		bone_indices.data(),
+		GL_STATIC_DRAW
+	);
 
 	glBindBuffer(GL_ARRAY_BUFFER, boneWeightBuffer);
-	glBufferData(GL_ARRAY_BUFFER, bone_weights.size() * sizeof(Vec4), &bone_weights[0], GL_STATIC_DRAW);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		bone_weights.size() * sizeof(Vec4),
+		bone_weights.data(),
+		GL_STATIC_DRAW
+	);
 
 	f.close();
 
 	has_attachment = true;
 }
+
 
 void Mesh::set_skinning_matrices(const std::vector<Mat4>& matrices)
 {
@@ -230,10 +263,10 @@ void Mesh::draw(cgv::render::context& ctx)
 	
 	Mat4 mvp = projm * modelview;
 
+	prog.enable(ctx);
+
 	prog.set_uniform(ctx, "modelviewproj", mvp);
 	prog.set_uniform(ctx, "skinned", has_attachment);
-
-	prog.enable(ctx);
 
 	glBindVertexArray(vao);
 
@@ -259,3 +292,5 @@ void Mesh::draw(cgv::render::context& ctx)
 
 	prog.disable(ctx);
 }
+
+

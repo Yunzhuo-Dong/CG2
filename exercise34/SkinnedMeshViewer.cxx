@@ -85,7 +85,7 @@ void SkinnedMeshViewer::load_attachment()
 
 void SkinnedMeshViewer::draw(context& c)
 {
-	glEnable(GL_CULL_FACE);
+	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 
 	if (data->get_mesh())

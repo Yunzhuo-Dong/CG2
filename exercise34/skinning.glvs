@@ -16,5 +16,13 @@ void main(void)
 	if(skinned)
 	{
 		/*Task 4.5: Implement skinning */
+
+		vec4 vertex = vec4(in_position, 1.0);
+
+		position =
+			bone_weights.x * bone_matrices[int(bone_indices.x)] * vertex +
+			bone_weights.y * bone_matrices[int(bone_indices.y)] * vertex +
+			bone_weights.z * bone_matrices[int(bone_indices.z)] * vertex +
+			bone_weights.w * bone_matrices[int(bone_indices.w)] * vertex;
 	}
 }

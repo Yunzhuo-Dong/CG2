@@ -1,4 +1,4 @@
-﻿// This source code is property of the Computer Graphics and Visualization 
+// This source code is property of the Computer Graphics and Visualization 
 // chair of the TU Dresden. Do not distribute! 
 // Copyright (C) CGV TU Dresden - All Rights Reserved
 //
@@ -553,14 +553,20 @@ void Skeleton::get_skinning_matrices(std::vector<Mat4>& matrices)
 				bone->calculate_transform_prev_to_current_with_dofs();
 
 
+			Mat4 inverse_origin = cgv::math::inverse(origin);
+
 			Mat4 skinning_matrix =
 				origin *
 				bone_transform *
-				bone->get_binding_pose_matrix();
+				bone->get_binding_pose_matrix() *
+				inverse_origin;
 
 
+
+
+
+			
 			matrices.push_back(skinning_matrix);
-
 
 			for (int i = 0; i < bone->childCount(); i++)
 			{
@@ -580,7 +586,6 @@ void Skeleton::get_skinning_matrices(std::vector<Mat4>& matrices)
 }
 
 
-
 Bone* Skeleton::find_bone(const std::string& name) const
 { 
 	auto it = bones.find(name); 
@@ -589,3 +594,5 @@ Bone* Skeleton::find_bone(const std::string& name) const
 	else
 		return it->second;
 }
+
+
