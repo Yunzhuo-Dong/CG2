@@ -535,6 +535,48 @@ void Skeleton::read_pinocchio_file(std::string filename)
 void Skeleton::get_skinning_matrices(std::vector<Mat4>& matrices)
 {
 	/*Task 4.5: Calculate skinning matrices */
+	matrices.clear();
+
+	if (root == nullptr)
+		return;
+
+
+	std::function<void(Bone*, const Mat4&)> calculate_skinning;
+
+
+	calculate_skinning =
+		[&](Bone* bone, const Mat4& current_transform)
+		{
+
+			Mat4 bone_transform =
+				current_transform *
+				bone->calculate_transform_prev_to_current_with_dofs();
+
+
+			Mat4 skinning_matrix =
+				origin *
+				bone_transform *
+				bone->get_binding_pose_matrix();
+
+
+			matrices.push_back(skinning_matrix);
+
+
+			for (int i = 0; i < bone->childCount(); i++)
+			{
+				calculate_skinning(
+					bone->child_at(i),
+					bone_transform
+				);
+			}
+		};
+
+
+	Mat4 identity;
+	identity.identity();
+
+
+	calculate_skinning(root, identity);
 }
 
 

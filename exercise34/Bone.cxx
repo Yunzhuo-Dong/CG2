@@ -44,7 +44,7 @@ void Bone::calculate_matrices()
     // Task 3.1: orientation from previous bone to current bone
     // ------------------------------------------------------------
     //
-    
+
     // current local -> global -> parent local
     //
     // current local -> global:
@@ -97,8 +97,40 @@ void Bone::calculate_matrices()
             directionLocal.z() * length
         );
 
-    // Task 4.5 later.
+    // ------------------------------------------------------------
+    // Task 4.5: Calculate binding pose matrices
+    // ------------------------------------------------------------
+
+    /*
+        systemTransformLocalToGlobal:
+            transforms points from bone local coordinates
+            to global coordinates.
+
+        systemTransformGlobalToLocal:
+            inverse transformation, used as the binding pose matrix.
+    */
+
+
+    if (parent != nullptr)
+    {
+        systemTransformLocalToGlobal =
+            parent->systemTransformLocalToGlobal *
+            calculate_transform_prev_to_current_without_dofs();
+    }
+    else
+    {
+        // Root bone starts from the global coordinate system.
+        systemTransformLocalToGlobal =
+            calculate_transform_prev_to_current_without_dofs();
+    }
+
+
+    // Binding pose matrix:
+    // global coordinates -> bone local coordinates
+    systemTransformGlobalToLocal =
+        cgv::math::inverse(systemTransformLocalToGlobal);
 }
+
 
 Mat4 Bone::calculate_transform_prev_to_current_with_dofs()
 {
